@@ -72,9 +72,114 @@
             image-rendering: pixelated; transition: transform 0.5s steps(8);
         }
 
-        #settings-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; border: 4px solid #a00; padding: 25px; z-index: 3000; width: 280px; text-align: left; }
+       <!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>FNaF Anthology Terminal</title>
+    
+    <!-- ПОДКЛЮЧЕНИЕ TELEGRAM SDK -->
+    <script src="https://telegram.org"></script>
+
+    <style>
+        :root { 
+            --brightness: 0.7; 
+            --static-opacity: 0.1; 
+            --tg-viewport-height: 100vh;
+        }
+
+        /* АНИМАЦИИ */
+        @keyframes ambient-vibration {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(0.2px, 0.2px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        @keyframes signal-jump {
+            0% { transform: translate(0); }
+            10% { transform: translate(-3px, 1px); filter: brightness(1.3); }
+            20% { transform: translate(3px, -1px); }
+            30% { transform: translate(0); }
+        }
+
+        body {
+            background-color: #050505; color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: var(--tg-viewport-height); margin: 0; padding: 20px 0;
+            overflow-x: hidden; overflow-y: auto; text-align: center;
+            animation: ambient-vibration 0.3s infinite;
+            -webkit-user-select: none; /* Убираем выделение текста в ТГ */
+        }
+
+        .jump-active { animation: signal-jump 0.2s linear !important; }
+
+        /* ЭФФЕКТЫ МОНИТОРА */
+        .scanline {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100px;
+            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.08), transparent);
+            animation: scanAnim 7s linear infinite; pointer-events: none; z-index: 1000;
+        }
+        @keyframes scanAnim { 0% { top: -120px; } 100% { top: 100vh; } }
+
+        body::before {
+            content: " "; position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 900; background-size: 100% 3px, 3px 100%; pointer-events: none;
+        }
+
+        .crt-overlay {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none; z-index: 901;
+        }
+
+        h1 { font-size: 1.8rem; letter-spacing: 4px; margin-bottom: 20px; z-index: 10; position: relative; text-shadow: 1px 0 red, -1px 0 blue; }
+        .its-me-style { color: #ff0000 !important; text-shadow: 0 0 10px red !important; }
+
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            z-index: 10; 
+            max-width: 95vw; 
+            filter: brightness(var(--brightness)); 
+            padding-bottom: 80px;
+        }
+
+        .game-card { 
+            text-decoration: none; color: #bbb; border: 2px solid #222; 
+            padding: 8px; transition: 0.3s; background: rgba(0,0,0,0.9); 
+            display: flex; flex-direction: column;
+        }
+        .game-card:active { border-color: #700; transform: scale(0.98); }
+        .game-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-bottom: 1px solid #222; }
+        .game-card span { margin-top: 5px; font-size: 14px; }
+        
+        .settings-btn {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 48px; height: 48px;
+            cursor: pointer; z-index: 2000;
+            background-color: #222;
+            border-radius: 5px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://w3.org" viewBox="0 0 16 16"><path fill="%23777" d="M7 2h2v1h2v2h2v6h-2v2h-2v1H7v-1H5v-2H3V5h2V3h2V2z"/></svg>');
+            background-size: 70%; background-position: center; background-repeat: no-repeat;
+            image-rendering: pixelated; 
+        }
+
+        #settings-panel { 
+            display: none; position: fixed; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); background: #000; 
+            border: 4px solid #a00; padding: 20px; z-index: 3000; 
+            width: 80vw; max-width: 300px; text-align: left; 
+        }
+        .setting-row { margin: 15px 0; color: #aaa; font-size: 12px; }
+        .setting-row input { width: 100%; accent-color: #a00; }
+
         .static-noise { position: fixed; inset: 0; background: url('https://giphy.com'); opacity: var(--static-opacity); pointer-events: none; z-index: 800; }
-        .dev-placeholder { width: 100%; height: 250px; background: #080808; border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #222; font-size: 11px; }
+        .dev-placeholder { width: 100%; aspect-ratio: 4/5; background: #080808; border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 10px; }
     </style>
 </head>
 <body onclick="initAudio()">
@@ -100,19 +205,40 @@
     </div>
 
     <div id="settings-panel">
-        <h2 style="color:red; font-size:12px; margin-top:0;">TERMINAL CONFIG</h2>
+        <h2 style="color:red; font-size:14px; margin-top:0; letter-spacing: 2px;">TERMINAL CONFIG</h2>
         <div class="setting-row"><label>BRIGHTNESS</label><input type="range" id="bright-ctrl" min="20" max="100" value="70"></div>
         <div class="setting-row"><label>STATIC NOISE</label><input type="range" id="noise-ctrl" min="0" max="20" value="10"></div>
         <div class="setting-row"><label>VOLUME</label><input type="range" id="vol-ctrl" min="0" max="50" value="20"></div>
-        <button onclick="toggleSettings()" style="background:#a00; color:white; border:none; padding:10px; width:100%; cursor:pointer;">EXIT</button>
+        <button onclick="toggleSettings()" style="background:#a00; color:white; border:none; padding:12px; width:100%; cursor:pointer; font-family: monospace; font-weight: bold;">EXIT</button>
     </div>
 
     <script>
+        // --- TELEGRAM LOGIC ---
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+        tg.setHeaderColor('#000000');
+        tg.setBackgroundColor('#050505');
+
+        // --- AUDIO & UI LOGIC ---
         const hum = document.getElementById('monitor-hum');
         const root = document.querySelector(':root');
         let audioInited = false;
-        function initAudio() { if (!audioInited) { hum.volume = 0.2; hum.play(); audioInited = true; } }
-        function toggleSettings() { const panel = document.getElementById('settings-panel'); panel.style.display = (panel.style.display === 'block') ? 'none' : 'block'; }
+
+        function initAudio() { 
+            if (!audioInited) { 
+                hum.volume = 0.1; 
+                hum.play().catch(() => console.log("Audio waiting for interaction")); 
+                audioInited = true; 
+            } 
+        }
+
+        function toggleSettings() { 
+            const panel = document.getElementById('settings-panel'); 
+            panel.style.display = (panel.style.display === 'block') ? 'none' : 'block'; 
+            // Вибрация при открытии настроек (только в ТГ)
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        }
         
         document.getElementById('bright-ctrl').addEventListener('input', (e) => root.style.setProperty('--brightness', e.target.value / 100));
         document.getElementById('noise-ctrl').addEventListener('input', (e) => root.style.setProperty('--static-opacity', e.target.value / 100));
@@ -120,35 +246,41 @@
 
         const title = document.getElementById('main-title');
         
-        // ЦИКЛ ПАСХАЛОК И ПЛАНОВЫХ СКАЧКОВ (раз в 10 секунд)
         function triggerMainEffect() {
             const chance = Math.random();
-            
-            // С шансом 10% показываем IT'S ME
-            if(chance > 0.90) {
+            if(chance > 0.92) {
                 title.innerText = "IT'S ME";
                 title.classList.add('its-me-style');
                 document.body.classList.add('jump-active');
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
                 
                 setTimeout(() => {
                     title.innerText = "Select a Nightmare";
                     title.classList.remove('its-me-style');
                     document.body.classList.remove('jump-active');
-                }, 150);
+                }, 180);
             } else {
-                // Если пасхалка не выпала, просто делаем заметный скачок экрана
                 document.body.classList.add('jump-active');
                 setTimeout(() => document.body.classList.remove('jump-active'), 200);
             }
-            
-            // Следующий эффект через 10 секунд
-            setTimeout(triggerMainEffect, 10000);
+            setTimeout(triggerMainEffect, 8000 + Math.random() * 5000);
         }
 
-        // Запуск системы эффектов
-        setTimeout(triggerMainEffect, 5000);
+        setTimeout(triggerMainEffect, 3000);
 
-        let sT; function maybeScreamer(el) { const img = el.querySelector('img'); const s = img.src; sT = setTimeout(() => { if(Math.random() > 0.8) { img.src = "https://giphy.com"; setTimeout(() => img.src = s, 250); } }, 3500); }
+        // СКРИМЕРЫ
+        let sT; 
+        function maybeScreamer(el) { 
+            const img = el.querySelector('img'); 
+            const originalSrc = img.src; 
+            sT = setTimeout(() => { 
+                if(Math.random() > 0.7) { 
+                    img.src = "https://giphy.com"; 
+                    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+                    setTimeout(() => img.src = originalSrc, 300); 
+                } 
+            }, 3000); 
+        }
         function resetScreamer() { clearTimeout(sT); }
     </script>
 </body>
