@@ -29,14 +29,6 @@
             30% { transform: translate(0); }
         }
 
-        @keyframes rare-shake {
-            0% { transform: translate(0,0); }
-            25% { transform: translate(2px, -2px); }
-            50% { transform: translate(-2px, 2px); }
-            75% { transform: translate(2px, 2px); }
-            100% { transform: translate(0,0); }
-        }
-
         body {
             background-color: #050505; color: white;
             font-family: 'Courier New', Courier, monospace;
@@ -83,7 +75,6 @@
             padding: 8px; transition: 0.3s; background: rgba(0,0,0,0.9); 
             display: flex; flex-direction: column;
         }
-        .game-card:active { border-color: #700; transform: scale(0.98); }
         .game-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-bottom: 1px solid #222; }
         .game-card span { margin-top: 5px; font-size: 14px; }
         
@@ -103,26 +94,9 @@
 
         .static-noise { position: fixed; inset: 0; background: url('https://giphy.com'); opacity: var(--static-opacity); pointer-events: none; z-index: 800; }
         .dev-placeholder { width: 100%; aspect-ratio: 4/5; background: #080808; border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 10px; }
-
-        /* ЭКРАНЫ ЗАГРУЗКИ */
-        #warning-screen {
-            position: fixed; inset: 0; background: #000; z-index: 1100;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-            pointer-events: all;
-        }
-        #warning-screen button {
-            background: none; border: 1px solid #444; color: #fff; padding: 10px 30px; 
-            cursor: pointer; font-family: monospace; letter-spacing: 2px;
-            z-index: 1101; pointer-events: all; position: relative;
-        }
-        #rare-screen {
-            display: none; position: fixed; inset: 0; background: #000; z-index: 1050;
-            align-items: center; justify-content: center;
-        }
-        .rare-shake-effect { animation: rare-shake 0.1s infinite; filter: contrast(1.2); }
     </style>
 </head>
-<body>
+<body onclick="initAudio()">
 
     <audio id="monitor-hum" loop><source src="https://soundjay.com" type="audio/mpeg"></audio>
     
@@ -130,23 +104,8 @@
     <div class="scanline"></div>
     <div class="crt-overlay"></div>
 
-    <!-- 1. ПРЕДУПРЕЖДЕНИЕ -->
-    <div id="warning-screen">
-        <h2 style="color:#a00; letter-spacing:5px; font-size: 18px; pointer-events: none;">WARNING</h2>
-        <p style="max-width:280px; line-height:1.6; color:#888; font-size:12px; margin: 20px 0; pointer-events: none;">
-            This terminal contains loud noises, flashing lights, and disturbing imagery. 
-            Proceed with caution.
-        </p>
-        <button id="accept-btn" onclick="startLoading()">[ ACCEPT ]</button>
-    </div>
-
-    <!-- 2. РЕДКИЙ ЭКРАН (ШАНС 10%) -->
-    <div id="rare-screen">
-        <img id="rare-img" src="assets/rare_freddy.jpg" style="width:100%; height:100%; object-fit:contain;">
-    </div>
-
-    <!-- 3. ОСНОВНОЕ МЕНЮ -->
-    <div id="main-content" style="display:none; opacity:0; transition: opacity 0.8s;">
+    <!-- ОСНОВНОЕ МЕНЮ (ТЕПЕРЬ ВИДИМО СРАЗУ) -->
+    <div id="main-content">
         <div class="settings-btn" onclick="toggleSettings()"></div>
         <h1 id="main-title">Select a Nightmare</h1>
         <div class="grid">
@@ -171,7 +130,6 @@
     </div>
 
     <script>
-        // Инициализация Telegram
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
@@ -182,44 +140,13 @@
         const root = document.querySelector(':root');
         let audioInited = false;
 
-        function startLoading() {
-            console.log("Loading started..."); // Проверка в консоли
-            
-            // Звук
+        // Звук включится при первом клике в любом месте меню
+        function initAudio() {
             if (!audioInited) { 
                 hum.volume = 0.1; 
-                hum.play().catch(e => console.log("Audio block:", e)); 
+                hum.play().catch(() => {}); 
                 audioInited = true; 
             }
-
-            // Убираем экран варнинга
-            document.getElementById('warning-screen').style.display = 'none';
-
-            // Шанс 10% на редкий экран
-            if (Math.random() < 0.10) {
-                const rare = document.getElementById('rare-screen');
-                const img = document.getElementById('rare-img');
-                rare.style.display = 'flex';
-                img.classList.add('rare-shake-effect');
-                
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-
-                setTimeout(() => {
-                    rare.style.display = 'none';
-                    showMenu();
-                }, 1500);
-            } else {
-                showMenu();
-            }
-        }
-
-        function showMenu() {
-            const content = document.getElementById('main-content');
-            content.style.display = 'block';
-            setTimeout(() => {
-                content.style.opacity = "1";
-            }, 50);
-            triggerMainEffect();
         }
 
         function toggleSettings() { 
@@ -251,6 +178,8 @@
             }
             setTimeout(triggerMainEffect, 8000 + Math.random() * 5000);
         }
+
+        triggerMainEffect();
 
         let sT; 
         function maybeScreamer(el) { 
