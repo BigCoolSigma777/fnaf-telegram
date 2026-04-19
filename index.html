@@ -2,80 +2,6 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>FNaF Anthology Terminal</title>
-    <style>
-        :root { --brightness: 0.7; --static-opacity: 0.1; }
-
-        /* ЕЛЕ ЗАМЕТНОЕ ФОНОВОЕ ДРОЖАНИЕ */
-        @keyframes ambient-vibration {
-            0% { transform: translate(0, 0); }
-            50% { transform: translate(0.2px, 0.2px); }
-            100% { transform: translate(0, 0); }
-        }
-
-        /* ЗАМЕТНЫЙ СКАЧОК СИГНАЛА */
-        @keyframes signal-jump {
-            0% { transform: translate(0); }
-            10% { transform: translate(-3px, 1px); filter: brightness(1.3); }
-            20% { transform: translate(3px, -1px); }
-            30% { transform: translate(0); }
-        }
-
-        body {
-            background-color: #050505; color: white;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; margin: 0; padding: 40px 0;
-            overflow-x: hidden; overflow-y: auto; text-align: center;
-            /* Постоянная микро-вибрация */
-            animation: ambient-vibration 0.3s infinite;
-        }
-
-        .jump-active { animation: signal-jump 0.2s linear !important; }
-
-        /* ЭФФЕКТЫ МОНИТОРА */
-        .scanline {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100px;
-            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.08), transparent);
-            animation: scanAnim 7s linear infinite; pointer-events: none; z-index: 1000;
-        }
-        @keyframes scanAnim { 0% { top: -120px; } 100% { top: 100vh; } }
-
-        body::before {
-            content: " "; position: fixed; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            z-index: 900; background-size: 100% 3px, 3px 100%; pointer-events: none;
-        }
-
-        .crt-overlay {
-            position: fixed; inset: 0;
-            background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%);
-            pointer-events: none; z-index: 901;
-        }
-
-        h1 { font-size: 2.2rem; letter-spacing: 6px; margin-bottom: 30px; z-index: 10; position: relative; text-shadow: 1px 0 red, -1px 0 blue; }
-        .its-me-style { color: #ff0000 !important; text-shadow: 0 0 10px red !important; }
-
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; z-index: 10; max-width: 500px; filter: brightness(var(--brightness)); }
-        .game-card { text-decoration: none; color: #bbb; border: 2px solid #222; padding: 12px; transition: 0.3s; background: rgba(0,0,0,0.9); width: 190px; }
-        .game-card:hover { border-color: #700; transform: scale(1.02); }
-        .game-card img { width: 100%; height: 250px; object-fit: cover; border-bottom: 1px solid #222; }
-        
-        .settings-btn {
-            position: fixed; bottom: 30px; right: 30px;
-            width: 48px; height: 48px;
-            cursor: pointer; z-index: 2000;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://w3.org" viewBox="0 0 16 16" shape-rendering="crispEdges"><path fill="black" d="M6 0h4v1h2v2h1v2h3v6h-3v2h-1v2h-2v1H6v-1H4v-2H3v-2H0V5h3V3h1V1h2V0z"/><path fill="%23777" d="M7 2h2v1h2v2h2v6h-2v2h-2v1H7v-1H5v-2H3V5h2V3h2V2z"/><path fill="black" d="M7 7h2v2H7z"/></svg>');
-            background-size: contain; background-repeat: no-repeat;
-            image-rendering: pixelated; transition: transform 0.5s steps(8);
-        }
-
-       <!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>FNaF Anthology Terminal</title>
     
@@ -103,6 +29,14 @@
             30% { transform: translate(0); }
         }
 
+        @keyframes rare-shake {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(2px, -2px); }
+            50% { transform: translate(-2px, 2px); }
+            75% { transform: translate(2px, 2px); }
+            100% { transform: translate(0,0); }
+        }
+
         body {
             background-color: #050505; color: white;
             font-family: 'Courier New', Courier, monospace;
@@ -110,7 +44,7 @@
             min-height: var(--tg-viewport-height); margin: 0; padding: 20px 0;
             overflow-x: hidden; overflow-y: auto; text-align: center;
             animation: ambient-vibration 0.3s infinite;
-            -webkit-user-select: none; /* Убираем выделение текста в ТГ */
+            -webkit-user-select: none;
         }
 
         .jump-active { animation: signal-jump 0.2s linear !important; }
@@ -140,13 +74,8 @@
         .its-me-style { color: #ff0000 !important; text-shadow: 0 0 10px red !important; }
 
         .grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            z-index: 10; 
-            max-width: 95vw; 
-            filter: brightness(var(--brightness)); 
-            padding-bottom: 80px;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; 
+            z-index: 10; max-width: 95vw; filter: brightness(var(--brightness)); padding-bottom: 80px;
         }
 
         .game-card { 
@@ -159,20 +88,16 @@
         .game-card span { margin-top: 5px; font-size: 14px; }
         
         .settings-btn {
-            position: fixed; bottom: 20px; right: 20px;
-            width: 48px; height: 48px;
-            cursor: pointer; z-index: 2000;
-            background-color: #222;
-            border-radius: 5px;
+            position: fixed; bottom: 20px; right: 20px; width: 48px; height: 48px;
+            cursor: pointer; z-index: 2000; background-color: #222; border-radius: 5px;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://w3.org" viewBox="0 0 16 16"><path fill="%23777" d="M7 2h2v1h2v2h2v6h-2v2h-2v1H7v-1H5v-2H3V5h2V3h2V2z"/></svg>');
             background-size: 70%; background-position: center; background-repeat: no-repeat;
             image-rendering: pixelated; 
         }
 
         #settings-panel { 
-            display: none; position: fixed; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); background: #000; 
-            border: 4px solid #a00; padding: 20px; z-index: 3000; 
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: #000; border: 4px solid #a00; padding: 20px; z-index: 3000; 
             width: 80vw; max-width: 300px; text-align: left; 
         }
         .setting-row { margin: 15px 0; color: #aaa; font-size: 12px; }
@@ -180,30 +105,58 @@
 
         .static-noise { position: fixed; inset: 0; background: url('https://giphy.com'); opacity: var(--static-opacity); pointer-events: none; z-index: 800; }
         .dev-placeholder { width: 100%; aspect-ratio: 4/5; background: #080808; border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 10px; }
+
+        /* ЭКРАНЫ ЗАГРУЗКИ */
+        #warning-screen {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
+        #rare-screen {
+            display: none; position: fixed; inset: 0; background: #000; z-index: 9998;
+            align-items: center; justify-content: center;
+        }
+        .rare-shake-effect { animation: rare-shake 0.1s infinite; filter: contrast(1.2); }
     </style>
 </head>
-<body onclick="initAudio()">
+<body>
 
     <audio id="monitor-hum" loop><source src="https://soundjay.com" type="audio/mpeg"></audio>
     <div class="static-noise"></div>
     <div class="scanline"></div>
     <div class="crt-overlay"></div>
 
-    <div class="settings-btn" onclick="toggleSettings()"></div>
-
-    <h1 id="main-title">Select a Nightmare</h1>
-
-    <div class="grid">
-        <a href="games/fnaf1/index.html" class="game-card" onmouseover="maybeScreamer(this)" onmouseout="resetScreamer(this)">
-            <img src="assets/fnaf1.jpg" alt="FNaF 1"><span>FNaF 1</span>
-        </a>
-        <a href="games/fnaf2/index.html" class="game-card">
-            <img src="assets/fnaf2.png" alt="FNaF 2"><span>FNaF 2</span>
-        </a>
-        <div class="game-card"><div class="dev-placeholder">В РАЗРАБОТКЕ</div><span>FNaF 3</span></div>
-        <div class="game-card"><div class="dev-placeholder">В РАЗРАБОТКЕ</div><span>FNaF 4</span></div>
+    <!-- 1. ПРЕДУПРЕЖДЕНИЕ -->
+    <div id="warning-screen">
+        <h2 style="color:#a00; letter-spacing:5px; font-size: 18px;">WARNING</h2>
+        <p style="max-width:280px; line-height:1.6; color:#888; font-size:12px; margin: 20px 0;">
+            This terminal contains loud noises, flashing lights, and disturbing imagery. 
+            Proceed with caution.
+        </p>
+        <button onclick="startLoading()" style="background:none; border:1px solid #444; color:#fff; padding:10px 30px; cursor:pointer; font-family:monospace; letter-spacing:2px;">[ ACCEPT ]</button>
     </div>
 
+    <!-- 2. РЕДКИЙ ЭКРАН (ШАНС 10%) -->
+    <div id="rare-screen">
+        <img id="rare-img" src="assets/rare_freddy.jpg" style="width:100%; height:100%; object-fit:contain;">
+    </div>
+
+    <!-- 3. ОСНОВНОЕ МЕНЮ (СКРЫТО) -->
+    <div id="main-content" style="display:none; opacity:0; transition: opacity 0.8s;">
+        <div class="settings-btn" onclick="toggleSettings()"></div>
+        <h1 id="main-title">Select a Nightmare</h1>
+        <div class="grid">
+            <a href="games/fnaf1/index.html" class="game-card" onmouseover="maybeScreamer(this)" onmouseout="resetScreamer(this)">
+                <img src="assets/fnaf1.jpg" alt="FNaF 1"><span>FNaF 1</span>
+            </a>
+            <a href="games/fnaf2/index.html" class="game-card">
+                <img src="assets/fnaf2.png" alt="FNaF 2"><span>FNaF 2</span>
+            </a>
+            <div class="game-card"><div class="dev-placeholder">В РАЗРАБОТКЕ</div><span>FNaF 3</span></div>
+            <div class="game-card"><div class="dev-placeholder">В РАЗРАБОТКЕ</div><span>FNaF 4</span></div>
+        </div>
+    </div>
+
+    <!-- ПАНЕЛЬ НАСТРОЕК -->
     <div id="settings-panel">
         <h2 style="color:red; font-size:14px; margin-top:0; letter-spacing: 2px;">TERMINAL CONFIG</h2>
         <div class="setting-row"><label>BRIGHTNESS</label><input type="range" id="bright-ctrl" min="20" max="100" value="70"></div>
@@ -213,30 +166,52 @@
     </div>
 
     <script>
-        // --- TELEGRAM LOGIC ---
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
         tg.setHeaderColor('#000000');
         tg.setBackgroundColor('#050505');
 
-        // --- AUDIO & UI LOGIC ---
         const hum = document.getElementById('monitor-hum');
         const root = document.querySelector(':root');
         let audioInited = false;
 
-        function initAudio() { 
+        function startLoading() {
             if (!audioInited) { 
                 hum.volume = 0.1; 
-                hum.play().catch(() => console.log("Audio waiting for interaction")); 
+                hum.play().catch(() => {}); 
                 audioInited = true; 
-            } 
+            }
+            document.getElementById('warning-screen').style.display = 'none';
+
+            // ШАНС 10% НА РЕДКИЙ ЭКРАН
+            if (Math.random() < 0.10) {
+                const rare = document.getElementById('rare-screen');
+                const img = document.getElementById('rare-img');
+                rare.style.display = 'flex';
+                img.classList.add('rare-shake-effect');
+                
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+
+                setTimeout(() => {
+                    rare.style.display = 'none';
+                    showMenu();
+                }, 1500);
+            } else {
+                showMenu();
+            }
+        }
+
+        function showMenu() {
+            const content = document.getElementById('main-content');
+            content.style.display = 'block';
+            setTimeout(() => content.style.opacity = "1", 50);
+            triggerMainEffect();
         }
 
         function toggleSettings() { 
             const panel = document.getElementById('settings-panel'); 
             panel.style.display = (panel.style.display === 'block') ? 'none' : 'block'; 
-            // Вибрация при открытии настроек (только в ТГ)
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         }
         
@@ -247,13 +222,11 @@
         const title = document.getElementById('main-title');
         
         function triggerMainEffect() {
-            const chance = Math.random();
-            if(chance > 0.92) {
+            if(Math.random() > 0.92) {
                 title.innerText = "IT'S ME";
                 title.classList.add('its-me-style');
                 document.body.classList.add('jump-active');
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-                
                 setTimeout(() => {
                     title.innerText = "Select a Nightmare";
                     title.classList.remove('its-me-style');
@@ -266,9 +239,6 @@
             setTimeout(triggerMainEffect, 8000 + Math.random() * 5000);
         }
 
-        setTimeout(triggerMainEffect, 3000);
-
-        // СКРИМЕРЫ
         let sT; 
         function maybeScreamer(el) { 
             const img = el.querySelector('img'); 
@@ -285,4 +255,3 @@
     </script>
 </body>
 </html>
-
