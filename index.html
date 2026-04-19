@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>FNaF Anthology Terminal</title>
     
-    <!-- ПОДКЛЮЧЕНИЕ TELEGRAM SDK -->
+    <!-- TELEGRAM SDK -->
     <script src="https://telegram.org"></script>
 
     <style>
@@ -100,19 +100,23 @@
             background: #000; border: 4px solid #a00; padding: 20px; z-index: 3000; 
             width: 80vw; max-width: 300px; text-align: left; 
         }
-        .setting-row { margin: 15px 0; color: #aaa; font-size: 12px; }
-        .setting-row input { width: 100%; accent-color: #a00; }
 
         .static-noise { position: fixed; inset: 0; background: url('https://giphy.com'); opacity: var(--static-opacity); pointer-events: none; z-index: 800; }
         .dev-placeholder { width: 100%; aspect-ratio: 4/5; background: #080808; border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 10px; }
 
         /* ЭКРАНЫ ЗАГРУЗКИ */
         #warning-screen {
-            position: fixed; inset: 0; background: #000; z-index: 9999;
+            position: fixed; inset: 0; background: #000; z-index: 1100;
             display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+            pointer-events: all;
+        }
+        #warning-screen button {
+            background: none; border: 1px solid #444; color: #fff; padding: 10px 30px; 
+            cursor: pointer; font-family: monospace; letter-spacing: 2px;
+            z-index: 1101; pointer-events: all; position: relative;
         }
         #rare-screen {
-            display: none; position: fixed; inset: 0; background: #000; z-index: 9998;
+            display: none; position: fixed; inset: 0; background: #000; z-index: 1050;
             align-items: center; justify-content: center;
         }
         .rare-shake-effect { animation: rare-shake 0.1s infinite; filter: contrast(1.2); }
@@ -121,18 +125,19 @@
 <body>
 
     <audio id="monitor-hum" loop><source src="https://soundjay.com" type="audio/mpeg"></audio>
+    
     <div class="static-noise"></div>
     <div class="scanline"></div>
     <div class="crt-overlay"></div>
 
     <!-- 1. ПРЕДУПРЕЖДЕНИЕ -->
     <div id="warning-screen">
-        <h2 style="color:#a00; letter-spacing:5px; font-size: 18px;">WARNING</h2>
-        <p style="max-width:280px; line-height:1.6; color:#888; font-size:12px; margin: 20px 0;">
+        <h2 style="color:#a00; letter-spacing:5px; font-size: 18px; pointer-events: none;">WARNING</h2>
+        <p style="max-width:280px; line-height:1.6; color:#888; font-size:12px; margin: 20px 0; pointer-events: none;">
             This terminal contains loud noises, flashing lights, and disturbing imagery. 
             Proceed with caution.
         </p>
-        <button onclick="startLoading()" style="background:none; border:1px solid #444; color:#fff; padding:10px 30px; cursor:pointer; font-family:monospace; letter-spacing:2px;">[ ACCEPT ]</button>
+        <button id="accept-btn" onclick="startLoading()">[ ACCEPT ]</button>
     </div>
 
     <!-- 2. РЕДКИЙ ЭКРАН (ШАНС 10%) -->
@@ -140,7 +145,7 @@
         <img id="rare-img" src="assets/rare_freddy.jpg" style="width:100%; height:100%; object-fit:contain;">
     </div>
 
-    <!-- 3. ОСНОВНОЕ МЕНЮ (СКРЫТО) -->
+    <!-- 3. ОСНОВНОЕ МЕНЮ -->
     <div id="main-content" style="display:none; opacity:0; transition: opacity 0.8s;">
         <div class="settings-btn" onclick="toggleSettings()"></div>
         <h1 id="main-title">Select a Nightmare</h1>
@@ -166,6 +171,7 @@
     </div>
 
     <script>
+        // Инициализация Telegram
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
@@ -177,14 +183,19 @@
         let audioInited = false;
 
         function startLoading() {
+            console.log("Loading started..."); // Проверка в консоли
+            
+            // Звук
             if (!audioInited) { 
                 hum.volume = 0.1; 
-                hum.play().catch(() => {}); 
+                hum.play().catch(e => console.log("Audio block:", e)); 
                 audioInited = true; 
             }
+
+            // Убираем экран варнинга
             document.getElementById('warning-screen').style.display = 'none';
 
-            // ШАНС 10% НА РЕДКИЙ ЭКРАН
+            // Шанс 10% на редкий экран
             if (Math.random() < 0.10) {
                 const rare = document.getElementById('rare-screen');
                 const img = document.getElementById('rare-img');
@@ -205,7 +216,9 @@
         function showMenu() {
             const content = document.getElementById('main-content');
             content.style.display = 'block';
-            setTimeout(() => content.style.opacity = "1", 50);
+            setTimeout(() => {
+                content.style.opacity = "1";
+            }, 50);
             triggerMainEffect();
         }
 
