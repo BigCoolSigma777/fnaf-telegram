@@ -21,12 +21,18 @@
             50% { transform: translate(0.2px, 0.2px); }
             100% { transform: translate(0, 0); }
         }
-
         @keyframes signal-jump {
             0% { transform: translate(0); }
             10% { transform: translate(-3px, 1px); filter: brightness(1.3); }
             20% { transform: translate(3px, -1px); }
             30% { transform: translate(0); }
+        }
+        @keyframes rare-shake {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(2px, -2px); }
+            50% { transform: translate(-2px, 2px); }
+            75% { transform: translate(2px, 2px); }
+            100% { transform: translate(0,0); }
         }
 
         body {
@@ -39,22 +45,21 @@
             -webkit-user-select: none;
         }
 
-        .jump-active { animation: signal-jump 0.2s linear !important; }
-
-        /* ЭФФЕКТЫ МОНИТОРА */
-        .scanline {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100px;
-            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.08), transparent);
-            animation: scanAnim 7s linear infinite; pointer-events: none; z-index: 1000;
-        }
-        @keyframes scanAnim { 0% { top: -120px; } 100% { top: 100vh; } }
-
         body::before {
             content: " "; position: fixed; inset: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
                         linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
             z-index: 900; background-size: 100% 3px, 3px 100%; pointer-events: none;
         }
+
+        .jump-active { animation: signal-jump 0.2s linear !important; }
+
+        .scanline {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100px;
+            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.08), transparent);
+            animation: scanAnim 7s linear infinite; pointer-events: none; z-index: 1000;
+        }
+        @keyframes scanAnim { 0% { top: -120px; } 100% { top: 100vh; } }
 
         .crt-overlay {
             position: fixed; inset: 0;
@@ -75,6 +80,7 @@
             padding: 8px; transition: 0.3s; background: rgba(0,0,0,0.9); 
             display: flex; flex-direction: column;
         }
+        .game-card:active { border-color: #700; transform: scale(0.98); }
         .game-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-bottom: 1px solid #222; }
         .game-card span { margin-top: 5px; font-size: 14px; }
         
@@ -91,36 +97,73 @@
             background: #000; border: 4px solid #a00; padding: 20px; z-index: 3000; 
             width: 80vw; max-width: 300px; text-align: left; 
         }
+        .setting-row { margin: 15px 0; color: #aaa; font-size: 10px; }
+        .setting-row input { width: 100%; accent-color: #a00; }
 
         .static-noise { position: fixed; inset: 0; background: url('https://giphy.com'); opacity: var(--static-opacity); pointer-events: none; z-index: 800; }
         .dev-placeholder { width: 100%; aspect-ratio: 4/5; background: #080808; border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 10px; }
+
+        /* ЭКРАНЫ */
+        #warning-screen {
+            position: fixed; inset: 0; background: #000; z-index: 1100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+            transition: opacity 1s;
+        }
+        #rare-screen {
+            display: none; position: fixed; inset: 0; background: #000; z-index: 1050;
+            align-items: center; justify-content: center;
+        }
+        .rare-shake-effect { animation: rare-shake 0.1s infinite; filter: contrast(1.2); }
     </style>
 </head>
 <body onclick="initAudio()">
 
     <audio id="monitor-hum" loop><source src="https://soundjay.com" type="audio/mpeg"></audio>
-    
+
     <div class="static-noise"></div>
     <div class="scanline"></div>
     <div class="crt-overlay"></div>
 
-    <!-- ОСНОВНОЕ МЕНЮ (ТЕПЕРЬ ВИДИМО СРАЗУ) -->
-    <div id="main-content">
+    <!-- 1. WARNING -->
+    <div id="warning-screen">
+        <h2 style="color:#a00; letter-spacing:5px; font-size: 18px;">WARNING</h2>
+        <p style="max-width:280px; line-height:1.6; color:#888; font-size:12px; margin: 20px 0;">
+            This terminal contains loud noises, flashing lights, and disturbing imagery. 
+            Proceed with caution.
+        </p>
+        <div style="color: #444; font-size: 10px; margin-top: 10px;">LOADING TERMINAL...</div>
+    </div>
+
+    <!-- 2. RARE SCREEN -->
+    <div id="rare-screen">
+        <img id="rare-img" src="assets/rare_freddy.jpg" style="width:100%; height:100%; object-fit:contain;">
+    </div>
+
+    <!-- 3. MENU -->
+    <div id="main-content" style="display:none; opacity:0; transition: opacity 0.8s; width: 100%;">
         <div class="settings-btn" onclick="toggleSettings()"></div>
         <h1 id="main-title">Select a Nightmare</h1>
+        
         <div class="grid">
-            <a href="games/fnaf1/index.html" class="game-card" onmouseover="maybeScreamer(this)" onmouseout="resetScreamer(this)">
-                <img src="assets/fnaf1.jpg" alt="FNaF 1"><span>FNaF 1</span>
+            <!-- FNAF 1 -->
+            <a href="games/fnaf1/index.html" class="game-card" onmouseover="maybeScreamer(this)" onmouseout="resetScreamer()">
+                <img src="assets/fnaf1.jpg" alt="FNaF 1">
+                <span>FNaF 1</span>
             </a>
-            <a href="games/fnaf2/index.html" class="game-card">
-                <img src="assets/fnaf2.png" alt="FNaF 2"><span>FNaF 2</span>
+
+            <!-- FNAF 2 (АКТИВНО) -->
+            <a href="games/fnaf2/index.html" class="game-card" onmouseover="maybeScreamer(this)" onmouseout="resetScreamer()">
+                <img src="assets/fnaf2.png" alt="FNaF 2">
+                <span>FNaF 2</span>
             </a>
+
+            <!-- В РАЗРАБОТКЕ -->
             <div class="game-card"><div class="dev-placeholder">В РАЗРАБОТКЕ</div><span>FNaF 3</span></div>
             <div class="game-card"><div class="dev-placeholder">В РАЗРАБОТКЕ</div><span>FNaF 4</span></div>
         </div>
     </div>
 
-    <!-- ПАНЕЛЬ НАСТРОЕК -->
+    <!-- SETTINGS PANEL -->
     <div id="settings-panel">
         <h2 style="color:red; font-size:14px; margin-top:0; letter-spacing: 2px;">TERMINAL CONFIG</h2>
         <div class="setting-row"><label>BRIGHTNESS</label><input type="range" id="bright-ctrl" min="20" max="100" value="70"></div>
@@ -133,19 +176,49 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
-        tg.setHeaderColor('#000000');
-        tg.setBackgroundColor('#050505');
 
         const hum = document.getElementById('monitor-hum');
         const root = document.querySelector(':root');
         let audioInited = false;
 
-        // Звук включится при первом клике в любом месте меню
         function initAudio() {
-            if (!audioInited) { 
+            if (!audioInited && hum) { 
                 hum.volume = 0.1; 
                 hum.play().catch(() => {}); 
                 audioInited = true; 
+            }
+        }
+
+        // ЗАПУСК
+        setTimeout(startLoading, 5000);
+
+        function startLoading() {
+            const warning = document.getElementById('warning-screen');
+            if(warning) warning.style.opacity = '0';
+            
+            setTimeout(() => {
+                if(warning) warning.style.display = 'none';
+                if (Math.random() < 0.10) {
+                    const rare = document.getElementById('rare-screen');
+                    rare.style.display = 'flex';
+                    document.getElementById('rare-img').classList.add('rare-shake-effect');
+                    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+                    setTimeout(() => {
+                        rare.style.display = 'none';
+                        showMenu();
+                    }, 1500);
+                } else {
+                    showMenu();
+                }
+            }, 1000);
+        }
+
+        function showMenu() {
+            const content = document.getElementById('main-content');
+            if(content) {
+                content.style.display = 'block';
+                setTimeout(() => content.style.opacity = "1", 50);
+                triggerMainEffect();
             }
         }
 
@@ -157,19 +230,22 @@
         
         document.getElementById('bright-ctrl').addEventListener('input', (e) => root.style.setProperty('--brightness', e.target.value / 100));
         document.getElementById('noise-ctrl').addEventListener('input', (e) => root.style.setProperty('--static-opacity', e.target.value / 100));
-        document.getElementById('vol-ctrl').addEventListener('input', (e) => hum.volume = e.target.value / 100);
+        document.getElementById('vol-ctrl').addEventListener('input', (e) => { if(hum) hum.volume = e.target.value / 100; });
 
         const title = document.getElementById('main-title');
-        
         function triggerMainEffect() {
             if(Math.random() > 0.92) {
-                title.innerText = "IT'S ME";
-                title.classList.add('its-me-style');
+                if(title) {
+                    title.innerText = "IT'S ME";
+                    title.classList.add('its-me-style');
+                }
                 document.body.classList.add('jump-active');
                 if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
                 setTimeout(() => {
-                    title.innerText = "Select a Nightmare";
-                    title.classList.remove('its-me-style');
+                    if(title) {
+                        title.innerText = "Select a Nightmare";
+                        title.classList.remove('its-me-style');
+                    }
                     document.body.classList.remove('jump-active');
                 }, 180);
             } else {
@@ -179,11 +255,10 @@
             setTimeout(triggerMainEffect, 8000 + Math.random() * 5000);
         }
 
-        triggerMainEffect();
-
         let sT; 
         function maybeScreamer(el) { 
             const img = el.querySelector('img'); 
+            if(!img) return;
             const originalSrc = img.src; 
             sT = setTimeout(() => { 
                 if(Math.random() > 0.7) { 
