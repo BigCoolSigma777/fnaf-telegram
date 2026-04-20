@@ -3,80 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TERMINAL</title>
-    <!-- ИСПРАВЛЕННЫЙ SDK -->
+    <title>FNaF Terminal</title>
     <script src="https://telegram.org"></script>
     <style>
         :root { --brightness: 0.8; --static-opacity: 0.15; }
-        
         @keyframes signal-jump { 
             0%, 100% { transform: translate(0,0); filter: brightness(1); } 
             10% { transform: translate(-4px, 2px); filter: brightness(1.4); } 
             20% { transform: translate(4px, -2px); filter: brightness(0.8); }
         }
         .jump-active { animation: signal-jump 0.15s linear !important; }
-
-        body { 
-            background: #000; color: #eee; font-family: 'Courier New', monospace; 
-            margin: 0; display: flex; flex-direction: column; align-items: center; 
-            min-height: 100vh; overflow: hidden;
-        }
-
+        body { background: #000; color: #eee; font-family: monospace; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
         .scanline { position: fixed; inset: 0; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.05), transparent); background-size: 100% 4px; pointer-events: none; z-index: 1000; }
-        
-        /* ИСПРАВЛЕННЫЙ ШУМ */
-        .static-noise { 
-            position: fixed; inset: 0; 
-            background: url('https://giphy.com'); 
-            opacity: var(--static-opacity); pointer-events: none; z-index: 800; 
-        }
-
-        #main-content { padding: 20px; z-index: 10; width: 100%; text-align: center; transition: 0.1s; }
-        h1 { font-size: 1.2rem; letter-spacing: 5px; color: #444; text-transform: uppercase; margin: 30px 0; }
+        .static-noise { position: fixed; inset: 0; background: url('https://giphy.com'); opacity: var(--static-opacity); pointer-events: none; z-index: 800; }
+        #main-content { padding: 20px; z-index: 10; width: 100%; text-align: center; }
+        h1 { font-size: 1.2rem; letter-spacing: 5px; color: #444; margin: 30px 0; transition: 0.1s; }
         .its-me { color: #f00 !important; text-shadow: 0 0 10px red !important; }
-
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 400px; margin: 0 auto; filter: brightness(var(--brightness)); }
         .card { text-decoration: none; background: #080808; border: 1px solid #222; padding: 10px; display: flex; flex-direction: column; }
-        .card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-bottom: 1px solid #1a1a1a; }
-        .card span { margin-top: 10px; font-size: 10px; color: #555; text-transform: uppercase; }
+        .card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-bottom: 1px solid #111; }
+        .card span { margin-top: 10px; font-size: 10px; color: #555; }
     </style>
 </head>
-<body onclick="initAudio()">
-
+<body onclick="if(window.Telegram.WebApp.HapticFeedback) Telegram.WebApp.HapticFeedback.impactOccurred('light')">
     <div class="static-noise"></div>
     <div class="scanline"></div>
-
     <div id="main-content">
         <h1 id="title">TERMINAL ACCESS</h1>
         <div class="grid">
             <a href="games/fnaf1/index.html" class="card">
-                <img src="assets/fnaf1.jpg"><span>Entry_01: FNAF</span>
+                <img src="assets/fnaf1.jpg"><span>ENTRY_01: FNAF</span>
             </a>
             <a href="games/fnaf2/index.html" class="card">
-                <img src="assets/fnaf2.png"><span>Entry_02: FNAF_2</span>
+                <img src="assets/fnaf2.png"><span>ENTRY_02: FNAF_2</span>
             </a>
         </div>
     </div>
-
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.ready();
-
-        function initAudio() {
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-        }
-
         function triggerGlitch() {
             const body = document.body;
             const title = document.getElementById('title');
-
             if (Math.random() > 0.85) {
                 body.classList.add('jump-active');
-                if (Math.random() > 0.7) {
+                if (Math.random() > 0.75) {
                     title.innerText = "IT'S ME";
                     title.classList.add('its-me');
-                    if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
                 }
                 setTimeout(() => {
                     body.classList.remove('jump-active');
@@ -87,14 +60,9 @@
                 body.classList.add('jump-active');
                 setTimeout(() => body.classList.remove('jump-active'), 100);
             }
-            // Повторяем глюк каждые 4-9 секунд
             setTimeout(triggerGlitch, 4000 + Math.random() * 5000);
         }
-
-        // Запуск через 1 секунду после загрузки
-        window.onload = function() {
-            setTimeout(triggerGlitch, 1000);
-        };
+        window.onload = () => { setTimeout(triggerGlitch, 1000); };
     </script>
 </body>
 </html>
