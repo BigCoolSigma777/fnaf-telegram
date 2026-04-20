@@ -29,18 +29,17 @@
         .static-noise { position: fixed; inset: 0; background: url('https://giphy.com'); opacity: var(--static-opacity); pointer-events: none; z-index: 800; }
         .jump-active { animation: signal-jump 0.15s linear !important; }
 
-        /* ЭКРАНЫ */
-        #warning-screen, #rare-screen { 
+        /* ЭКРАН С ФРЕДДИ */
+        #rare-screen { 
             position: fixed; inset: 0; background: #000; z-index: 9999; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            display: none; flex-direction: column; align-items: center; justify-content: center; 
             transition: opacity 0.8s; text-align: center;
         }
-        #rare-screen { display: none; }
         .rare-img { width: 100%; height: 100%; object-fit: cover; animation: rare-shake 0.1s infinite; filter: contrast(1.2) brightness(0.8); }
 
-        /* МЕНЮ */
-        #main-content { padding: 20px; z-index: 10; width: 100%; opacity: 0; display: none; transition: 1s; box-sizing: border-box; }
-        h1 { font-size: 1.3rem; letter-spacing: 4px; margin: 30px 0; color: #555; text-transform: uppercase; transition: 0.1s; text-align: center; width: 100%; }
+        /* ГЛАВНОЕ МЕНЮ */
+        #main-content { padding: 20px; z-index: 10; width: 100%; box-sizing: border-box; display: block; opacity: 1; }
+        h1 { font-size: 1.3rem; letter-spacing: 4px; margin: 30px 0; color: #555; text-transform: uppercase; transition: 0.1s; text-align: center; }
         .its-me-style { color: #f00 !important; text-shadow: 0 0 15px red !important; }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 400px; margin: 0 auto; filter: brightness(var(--brightness)); }
@@ -65,15 +64,12 @@
     <div class="static-noise"></div>
     <div class="scanline"></div>
 
-    <div id="warning-screen">
-        <h2 style="color: #a00; letter-spacing: 5px;">WARNING</h2>
-        <p style="max-width: 250px; color: #555; font-size: 13px;">THIS TERMINAL CONTAINS DISTURBING IMAGERY.</p>
-    </div>
-
+    <!-- РЕДКИЙ ЭКРАН (20% ШАНС ПРИ ВХОДЕ) -->
     <div id="rare-screen">
         <img src="assets/rare_freddy.jpg" class="rare-img">
     </div>
 
+    <!-- ГЛАВНОЕ МЕНЮ -->
     <div id="main-content">
         <h1 id="main-title">Terminal Access</h1>
         <div class="grid">
@@ -104,29 +100,27 @@
         let audioInited = false;
         function initAudio() { if(!audioInited && hum) { hum.volume = 0.1; hum.play().catch(()=>{}); audioInited = true; } }
 
-        // ЗАГРУЗКА
+        // ПРОВЕРКА НА СКРИМЕР ПРИ ЗАПУСКЕ
         window.onload = function() {
-            setTimeout(() => {
-                const warning = document.getElementById('warning-screen');
-                warning.style.opacity = '0';
+            if (Math.random() < 0.20) { // 20% шанс
+                const rare = document.getElementById('rare-screen');
+                const menu = document.getElementById('main-content');
+                menu.style.display = 'none'; // Прячем меню
+                rare.style.display = 'flex';
+                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+                
                 setTimeout(() => {
-                    warning.style.display = 'none';
-                    if (Math.random() < 0.20) { // 20% шанс на Фредди
-                        const rare = document.getElementById('rare-screen');
-                        rare.style.display = 'flex';
-                        if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
-                        setTimeout(() => { rare.style.display = 'none'; showMenu(); }, 2000);
-                    } else { showMenu(); }
-                }, 800);
-            }, 3000);
+                    rare.style.opacity = '0';
+                    setTimeout(() => {
+                        rare.style.display = 'none';
+                        menu.style.display = 'block';
+                        triggerGlitch();
+                    }, 800);
+                }, 2000);
+            } else {
+                triggerGlitch();
+            }
         };
-
-        function showMenu() {
-            const mc = document.getElementById('main-content');
-            mc.style.display = 'block';
-            setTimeout(() => mc.style.opacity = '1', 50);
-            triggerGlitch();
-        }
 
         function triggerGlitch() {
             const title = document.getElementById('main-title');
