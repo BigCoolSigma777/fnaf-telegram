@@ -3,257 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>FNaF Anthology Terminal</title>
-    
-    <!-- TELEGRAM SDK -->
+    <title>FNaF Anthology</title>
     <script src="https://telegram.org"></script>
-
     <style>
-        :root { 
-            --brightness: 0.7; 
-            --static-opacity: 0.1; 
-            --tg-viewport-height: 100vh;
-        }
-
-        /* АНИМАЦИИ */
-        @keyframes ambient-vibration {
-            0% { transform: translate(0, 0); }
-            50% { transform: translate(0.2px, 0.2px); }
-            100% { transform: translate(0, 0); }
-        }
-
-        @keyframes signal-jump {
-            0% { transform: translate(0); }
-            10% { transform: translate(-3px, 1px); filter: brightness(1.3); }
-            20% { transform: translate(3px, -1px); }
-            30% { transform: translate(0); }
-        }
-
-        @keyframes rare-shake {
-            0% { transform: translate(0,0); }
-            25% { transform: translate(2px, -2px); }
-            50% { transform: translate(-2px, 2px); }
-            75% { transform: translate(2px, 2px); }
-            100% { transform: translate(0,0); }
-        }
-
-        body {
-            background-color: #050505; color: white;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: var(--tg-viewport-height); margin: 0; padding: 20px 0;
-            overflow-x: hidden; overflow-y: auto; text-align: center;
-            animation: ambient-vibration 0.3s infinite;
-            -webkit-user-select: none;
-        }
-
-        body::before {
-            content: " "; position: fixed; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            z-index: 900; background-size: 100% 3px, 3px 100%; pointer-events: none;
-        }
-
-        .jump-active { animation: signal-jump 0.2s linear !important; }
-
-        .scanline {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100px;
-            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.08), transparent);
-            animation: scanAnim 7s linear infinite; pointer-events: none; z-index: 1000;
-        }
-        @keyframes scanAnim { 0% { top: -120px; } 100% { top: 100vh; } }
-
-        .crt-overlay {
-            position: fixed; inset: 0;
-            background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%);
-            pointer-events: none; z-index: 901;
-        }
-
-        h1 { font-size: 1.8rem; letter-spacing: 4px; margin-bottom: 20px; z-index: 10; position: relative; text-shadow: 1px 0 red, -1px 0 blue; }
-        .its-me-style { color: #ff0000 !important; text-shadow: 0 0 10px red !important; }
-
-        .grid { 
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; 
-            z-index: 10; max-width: 95vw; filter: brightness(var(--brightness)); padding-bottom: 80px;
-        }
-
-        .game-card { 
-            text-decoration: none; color: #bbb; border: 2px solid #222; 
-            padding: 8px; transition: 0.3s; background: rgba(0,0,0,0.9); 
-            display: flex; flex-direction: column;
-        }
-        .game-card:active { border-color: #700; transform: scale(0.98); }
-        .game-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-bottom: 1px solid #222; }
-        .game-card span { margin-top: 5px; font-size: 14px; }
+        :root { --brightness: 0.8; }
+        body { background: #000; color: #eee; font-family: 'Courier New', monospace; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         
-        .settings-btn {
-            position: fixed; bottom: 20px; right: 20px; width: 48px; height: 48px;
-            cursor: pointer; z-index: 2000; background-color: #222; border-radius: 5px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://w3.org" viewBox="0 0 16 16"><path fill="%23777" d="M7 2h2v1h2v2h2v6h-2v2h-2v1H7v-1H5v-2H3V5h2V3h2V2z"/></svg>');
-            background-size: 70%; background-position: center; background-repeat: no-repeat;
-            image-rendering: pixelated; 
-        }
-
-        #settings-panel { 
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: #000; border: 4px solid #a00; padding: 20px; z-index: 3000; 
-            width: 80vw; max-width: 300px; text-align: left; 
-        }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; font-size: 10px; color: #888; }
-        .setting-row input { width: 60%; accent-color: #a00; }
-
-        .static-noise { position: fixed; inset: 0; background: url('https://giphy.com'); opacity: var(--static-opacity); pointer-events: none; z-index: 800; }
-        .dev-placeholder { width: 100%; aspect-ratio: 4/5; background: #080808; border: 1px dashed #333; display: flex; align-items: center; justify-content: center; color: #444; font-size: 10px; }
-
+        /* Экран предупреждения */
         #warning-screen {
-            position: fixed; inset: 0; background: #000; z-index: 1100;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-            transition: opacity 1s;
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1s ease; text-align: center;
         }
-        #rare-screen {
-            display: none; position: fixed; inset: 0; background: #000; z-index: 1050;
-            align-items: center; justify-content: center;
-        }
-        .rare-shake-effect { animation: rare-shake 0.1s infinite; filter: contrast(1.2); }
+
+        /* Меню (изначально скрыто) */
+        #main-content { display: none; opacity: 0; transition: 1s; width: 100%; padding: 20px; box-sizing: border-box; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 400px; margin: 0 auto; }
+        .game-card { text-decoration: none; background: #080808; border: 1px solid #222; padding: 10px; display: flex; flex-direction: column; color: #fff; }
+        .game-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; }
+        h2 { color: #a00; letter-spacing: 5px; }
     </style>
 </head>
 <body onclick="initAudio()">
 
     <audio id="monitor-hum" loop><source src="https://soundjay.com" type="audio/mpeg"></audio>
 
-    <div class="static-noise"></div>
-    <div class="scanline"></div>
-    <div class="crt-overlay"></div>
-
+    <!-- Экран варнинга -->
     <div id="warning-screen">
-        <h2 style="color:#a00; letter-spacing:5px; font-size: 18px;">WARNING</h2>
-        <p style="max-width:280px; line-height:1.6; color:#888; font-size:12px; margin: 20px 0;">
-            This terminal contains loud noises, flashing lights, and disturbing imagery. 
-            Proceed with caution.
-        </p>
-        <div style="color: #444; font-size: 10px; margin-top: 10px;">LOADING TERMINAL...</div>
+        <h2>WARNING</h2>
+        <p style="max-width: 250px; color: #555;">This terminal contains disturbing imagery and loud noises.</p>
+        <p style="color: #222; font-size: 10px; margin-top: 20px;">LOADING...</p>
     </div>
 
-    <div id="rare-screen">
-        <img id="rare-img" src="assets/rare_freddy.jpg" style="width:100%; height:100%; object-fit:contain;">
-    </div>
-
-    <div id="main-content" style="display:none; opacity:0; transition: opacity 0.8s; width: 100%;">
-        <div class="settings-btn" onclick="toggleSettings()"></div>
-        <h1 id="main-title">Select a Nightmare</h1>
+    <!-- Основное меню -->
+    <div id="main-content">
+        <h1 style="font-size: 18px; color: #444; letter-spacing: 3px; margin-bottom: 20px;">SELECT NIGHTMARE</h1>
         <div class="grid">
-            <a href="games/fnaf1/index.html" class="game-card" onmouseover="maybeScreamer(this)" onmouseout="resetScreamer()">
+            <a href="games/fnaf1/index.html" class="game-card">
                 <img src="assets/fnaf1.jpg"><span>FNaF 1</span>
             </a>
-            <a href="games/fnaf2/index.html" class="game-card" onmouseover="maybeScreamer(this)" onmouseout="resetScreamer()">
+            <a href="games/fnaf2/index.html" class="game-card">
                 <img src="assets/fnaf2.png"><span>FNaF 2</span>
             </a>
-            <div class="game-card"><div class="dev-placeholder">В РАЗРАБОТКЕ</div><span>FNaF 3</span></div>
-            <div class="game-card"><div class="dev-placeholder">В РАЗРАБОТКЕ</div><span>FNaF 4</span></div>
         </div>
-    </div>
-
-    <div id="settings-panel">
-        <h2 style="color:red; font-size:14px; margin-top:0; letter-spacing: 2px;">TERMINAL CONFIG</h2>
-        <div class="setting-row"><label>BRIGHTNESS</label><input type="range" id="bright-ctrl" min="20" max="100" value="70"></div>
-        <div class="setting-row"><label>STATIC NOISE</label><input type="range" id="noise-ctrl" min="0" max="20" value="10"></div>
-        <div class="setting-row"><label>VOLUME</label><input type="range" id="vol-ctrl" min="0" max="50" value="20"></div>
-        <button onclick="toggleSettings()" style="background:#a00; color:white; border:none; padding:12px; width:100%; cursor:pointer; font-family: monospace; font-weight: bold;">EXIT</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
-        tg.setHeaderColor('#000000');
-        tg.setBackgroundColor('#050505');
-
-        const hum = document.getElementById('monitor-hum');
-        const root = document.querySelector(':root');
-        let audioInited = false;
 
         function initAudio() {
-            if (!audioInited && hum) { 
-                hum.volume = 0.1; 
-                hum.play().catch(() => {}); 
-                audioInited = true; 
-            }
+            const hum = document.getElementById('monitor-hum');
+            if(hum) { hum.volume = 0.1; hum.play().catch(()=>{}); }
         }
 
-        setTimeout(startLoading, 5000);
-
-        function startLoading() {
+        // ЖЕЛЕЗНЫЙ ТАЙМЕР: ЧЕРЕЗ 3 СЕКУНДЫ ВАРНИНГ УХОДИТ
+        setTimeout(() => {
             const warning = document.getElementById('warning-screen');
-            if(warning) warning.style.opacity = '0';
-            setTimeout(() => {
-                if(warning) warning.style.display = 'none';
-                if (Math.random() < 0.20) {
-                    const rare = document.getElementById('rare-screen');
-                    if(rare) rare.style.display = 'flex';
-                    document.getElementById('rare-img').classList.add('rare-shake-effect');
-                    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-                    setTimeout(() => {
-                        if(rare) rare.style.display = 'none';
-                        showMenu();
-                    }, 2000);
-                } else {
-                    showMenu();
-                }
-            }, 1000);
-        }
-
-        function showMenu() {
-            const content = document.getElementById('main-content');
-            if(content) {
-                content.style.display = 'block';
-                setTimeout(() => content.style.opacity = "1", 50);
-                triggerMainEffect();
-            }
-        }
-
-        function toggleSettings() { 
-            const panel = document.getElementById('settings-panel'); 
-            panel.style.display = (panel.style.display === 'block') ? 'none' : 'block'; 
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-        }
-        
-        document.getElementById('bright-ctrl').addEventListener('input', (e) => root.style.setProperty('--brightness', e.target.value / 100));
-        document.getElementById('noise-ctrl').addEventListener('input', (e) => root.style.setProperty('--static-opacity', e.target.value / 100));
-        document.getElementById('vol-ctrl').addEventListener('input', (e) => { if(hum) hum.volume = e.target.value / 100; });
-
-        function triggerMainEffect() {
-            const title = document.getElementById('main-title');
-            if(Math.random() > 0.92) {
-                title.innerText = "IT'S ME";
-                title.classList.add('its-me-style');
-                document.body.classList.add('jump-active');
-                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+            const menu = document.getElementById('main-content');
+            
+            if (warning) {
+                warning.style.opacity = '0'; // Плавно гасим
                 setTimeout(() => {
-                    title.innerText = "Select a Nightmare";
-                    title.classList.remove('its-me-style');
-                    document.body.classList.remove('jump-active');
-                }, 180);
-            } else {
-                document.body.classList.add('jump-active');
-                setTimeout(() => document.body.classList.remove('jump-active'), 200);
+                    warning.style.display = 'none'; // Полностью удаляем
+                    if (menu) {
+                        menu.style.display = 'block'; // Показываем меню
+                        setTimeout(() => { menu.style.opacity = '1'; }, 50);
+                    }
+                }, 1000); // 1 сек на анимацию
             }
-            setTimeout(triggerMainEffect, 8000 + Math.random() * 5000);
-        }
-
-        let sT; 
-        function maybeScreamer(el) { 
-            const img = el.querySelector('img'); 
-            if(!img) return;
-            const originalSrc = img.src; 
-            sT = setTimeout(() => { 
-                if(Math.random() > 0.7) { 
-                    img.src = "https://giphy.com"; 
-                    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
-                    setTimeout(() => img.src = originalSrc, 300); 
-                } 
-            }, 3000); 
-        }
-        function resetScreamer() { clearTimeout(sT); }
+        }, 3000); // 3 сек висит текст
     </script>
 </body>
 </html>
