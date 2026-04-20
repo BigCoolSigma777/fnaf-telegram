@@ -3,66 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>FNaF Terminal</title>
+    <title>FNaF Anthology Terminal</title>
     <script src="https://telegram.org"></script>
     <style>
-        :root { --brightness: 0.8; --static-opacity: 0.15; }
+        :root { --brightness: 0.8; --static-opacity: 0.12; --fnaf-red: #a00; }
+
         @keyframes signal-jump { 
-            0%, 100% { transform: translate(0,0); filter: brightness(1); } 
+            0%, 100% { transform: translate(0); } 
             10% { transform: translate(-4px, 2px); filter: brightness(1.4); } 
-            20% { transform: translate(4px, -2px); filter: brightness(0.8); }
+            20% { transform: translate(4px, -2px); } 
         }
-        .jump-active { animation: signal-jump 0.15s linear !important; }
-        body { background: #000; color: #eee; font-family: monospace; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
-        .scanline { position: fixed; inset: 0; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.05), transparent); background-size: 100% 4px; pointer-events: none; z-index: 1000; }
+
+        body { 
+            background: #000; color: #eee; font-family: 'Courier New', monospace; 
+            margin: 0; display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; overflow-x: hidden; -webkit-user-select: none;
+        }
+
+        /* ЭФФЕКТЫ МОНИТОРА */
+        .scanline { position: fixed; inset: 0; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.03), transparent); background-size: 100% 4px; pointer-events: none; z-index: 1000; }
         .static-noise { position: fixed; inset: 0; background: url('https://giphy.com'); opacity: var(--static-opacity); pointer-events: none; z-index: 800; }
-        #main-content { padding: 20px; z-index: 10; width: 100%; text-align: center; }
-        h1 { font-size: 1.2rem; letter-spacing: 5px; color: #444; margin: 30px 0; transition: 0.1s; }
-        .its-me { color: #f00 !important; text-shadow: 0 0 10px red !important; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 400px; margin: 0 auto; filter: brightness(var(--brightness)); }
-        .card { text-decoration: none; background: #080808; border: 1px solid #222; padding: 10px; display: flex; flex-direction: column; }
-        .card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-bottom: 1px solid #111; }
-        .card span { margin-top: 10px; font-size: 10px; color: #555; }
+        .jump-active { animation: signal-jump 0.15s linear !important; }
+
+        /* ИНТЕРФЕЙС МЕНЮ */
+        #main-content { padding: 20px; z-index: 10; width: 100%; box-sizing: border-box; text-align: center; }
+        
+        h1 { font-size: 1.3rem; letter-spacing: 4px; margin: 30px 0; color: #555; text-transform: uppercase; transition: 0.1s; }
+        .its-me-style { color: #f00 !important; text-shadow: 0 0 15px red !important; }
+
+        .grid { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
+            max-width: 400px; margin: 0 auto; filter: brightness(var(--brightness)); 
+        }
+        
+        .game-card { 
+            text-decoration: none; background: #080808; border: 2px solid #222; padding: 8px; 
+            display: flex; flex-direction: column; transition: 0.3s;
+        }
+        .game-card:active { border-color: var(--fnaf-red); transform: scale(0.95); filter: brightness(1.5); }
+        .game-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-bottom: 1px solid #1a1a1a; filter: grayscale(0.2); }
+        .game-card span { margin-top: 10px; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+
+        .locked { opacity: 0.2; filter: grayscale(1); }
+        .dev-tag { height: 140px; display: flex; align-items: center; justify-content: center; background: #050505; border: 1px dashed #222; color: #333; font-size: 9px; }
+
+        /* НАСТРОЙКИ */
+        .settings-btn { position: fixed; bottom: 20px; right: 20px; width: 40px; height: 40px; background: #222; border-radius: 5px; z-index: 2000; opacity: 0.3; cursor: pointer; }
+        #settings-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000; border: 3px solid #a00; padding: 20px; z-index: 3000; width: 240px; }
     </style>
 </head>
-<body onclick="if(window.Telegram.WebApp.HapticFeedback) Telegram.WebApp.HapticFeedback.impactOccurred('light')">
+<body onclick="initAudio()">
+
+    <audio id="monitor-hum" loop><source src="https://soundjay.com" type="audio/mpeg"></audio>
     <div class="static-noise"></div>
     <div class="scanline"></div>
+
     <div id="main-content">
-        <h1 id="title">TERMINAL ACCESS</h1>
+        <h1 id="main-title">Terminal Access</h1>
         <div class="grid">
-            <a href="games/fnaf1/index.html" class="card">
-                <img src="assets/fnaf1.jpg"><span>ENTRY_01: FNAF</span>
+            <!-- КАРТОЧКА FNAF 1 -->
+            <a href="games/fnaf1/index.html" class="game-card">
+                <img src="assets/fnaf1.jpg"><span>Entry_01: FNaF</span>
             </a>
-            <a href="games/fnaf2/index.html" class="card">
-                <img src="assets/fnaf2.png"><span>ENTRY_02: FNAF_2</span>
+            <!-- КАРТОЧКА FNAF 2 -->
+            <a href="games/fnaf2/index.html" class="game-card">
+                <img src="assets/fnaf2.png"><span>Entry_02: FNaF_2</span>
             </a>
+            <div class="game-card locked"><div class="dev-tag">DATA CORRUPTED</div><span>Entry_03: ???</span></div>
+            <div class="game-card locked"><div class="dev-tag">DATA CORRUPTED</div><span>Entry_04: ???</span></div>
         </div>
     </div>
+
+    <div class="settings-btn" onclick="toggleSettings()"></div>
+    <div id="settings-panel">
+        <h4 style="color:red; margin:0 0 10px 0; font-size: 12px; font-family: monospace;">CONFIG_SYS</h4>
+        <input type="range" id="bright-ctrl" min="20" max="100" value="80" style="width:100%; accent-color:red;">
+        <button onclick="toggleSettings()" style="width:100%; margin-top:15px; background:#a00; color:#fff; border:none; padding:10px; cursor:pointer;">CLOSE</button>
+    </div>
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.ready();
+
+        const hum = document.getElementById('monitor-hum');
+        let audioInited = false;
+        function initAudio() { if(!audioInited && hum) { hum.volume = 0.1; hum.play().catch(()=>{}); audioInited = true; } }
+
+        // ЭФФЕКТЫ МОНИТОРА
         function triggerGlitch() {
-            const body = document.body;
-            const title = document.getElementById('title');
-            if (Math.random() > 0.85) {
-                body.classList.add('jump-active');
-                if (Math.random() > 0.75) {
-                    title.innerText = "IT'S ME";
-                    title.classList.add('its-me');
-                }
+            const title = document.getElementById('main-title');
+            if (Math.random() > 0.92) {
+                title.innerText = "IT'S ME";
+                title.classList.add('its-me-style');
+                document.body.classList.add('jump-active');
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
                 setTimeout(() => {
-                    body.classList.remove('jump-active');
-                    title.innerText = "TERMINAL ACCESS";
-                    title.classList.remove('its-me');
-                }, 200);
+                    title.innerText = "Terminal Access";
+                    title.classList.remove('its-me-style');
+                    document.body.classList.remove('jump-active');
+                }, 180);
             } else {
-                body.classList.add('jump-active');
-                setTimeout(() => body.classList.remove('jump-active'), 100);
+                document.body.classList.add('jump-active');
+                setTimeout(() => document.body.classList.remove('jump-active'), 100);
             }
-            setTimeout(triggerGlitch, 4000 + Math.random() * 5000);
+            setTimeout(triggerGlitch, 5000 + Math.random() * 5000);
         }
-        window.onload = () => { setTimeout(triggerGlitch, 1000); };
+        
+        window.onload = triggerGlitch;
+
+        function toggleSettings() {
+            const p = document.getElementById('settings-panel');
+            p.style.display = (p.style.display === 'block') ? 'none' : 'block';
+        }
+
+        document.getElementById('bright-ctrl').addEventListener('input', (e) => {
+            document.documentElement.style.setProperty('--brightness', e.target.value / 100);
+        });
     </script>
 </body>
 </html>
